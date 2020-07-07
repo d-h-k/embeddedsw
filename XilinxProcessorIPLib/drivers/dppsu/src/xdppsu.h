@@ -159,7 +159,9 @@ typedef enum {
  * video will be displayed.
  */
 typedef struct {
-	XVidC_VideoTimingMode Vtm;	/**< The video timing. */
+	XVidC_VideoTiming Vtm;	/**< The video timing. */
+	XVidC_VideoMode VmId;
+   XVidC_FrameRate FrameRate;
 	u32 PixelClockHz;		/**< The pixel clock of the stream (in
 						Hz). */
 	u32 HStart;			/**< Horizontal blank start (in
@@ -280,7 +282,6 @@ typedef struct {
 
 } XDpPsu;
 
-extern const XVidC_VideoTimingMode XVidC_VideoTimingModes[XVIDC_VM_NUM_SUPPORTED];
 /**************************** Function Prototypes *****************************/
 
 /* xdppsu.c: Setup and initialization functions. */
