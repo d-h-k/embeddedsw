@@ -140,12 +140,16 @@ void XIic_InterruptHandler(void *InstancePtr)
 	IicPtr->Stats.IicInterrupts++;
 	Status = XIic_ReadReg(IicPtr->BaseAddress, XIIC_SR_REG_OFFSET);
 
+	u32 ctl = XIic_ReadReg(IicPtr->BaseAddress, XIIC_CR_REG_OFFSET);
 	u8 gp = 0;
 	gp |= (IntrStatus & XIIC_INTR_ARB_LOST_MASK) 	? (1 << 0) : 0;
 	gp |= (IntrStatus & XIIC_INTR_TX_ERROR_MASK) 	? (1 << 1) : 0;
-	gp |= (IntrStatus & XIIC_INTR_BNB_MASK) 		? (1 << 2) : 0;
-	gp |= (Status & XIIC_SR_BUS_BUSY_MASK) 			? (1 << 3) : 0;
-	gp |= (XIic_ReadReg(IicPtr->BaseAddress, XIIC_CR_REG_OFFSET) & XIIC_CR_MSMS_MASK) 			? (1 << 4) : 0;
+	gp |= (IntrStatus & XIIC_INTR_TX_EMPTY_MASK)	? (1 << 2) : 0;
+	gp |= (IntrStatus & XIIC_INTR_RX_FULL_MASK)		? (1 << 3) : 0;
+	gp |= (IntrStatus & XIIC_INTR_BNB_MASK) 		? (1 << 4) : 0;
+	gp |= (Status & XIIC_SR_BUS_BUSY_MASK) 			? (1 << 5) : 0;
+	gp |= (ctl & XIIC_CR_MSMS_MASK) 				? (1 << 6) : 0;
+	gp |= (ctl & XIIC_CR_REPEATED_START_MASK) 		? (1 << 7) : 0;
 	XIic_SetGpOutput(IicPtr, gp);
 	/*
 	 * Service requesting interrupt.

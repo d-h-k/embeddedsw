@@ -273,8 +273,29 @@ extern "C" {
 *		parameterization, such as the GPO Register.
 *
 ******************************************************************************/
-#define XIic_WriteReg(BaseAddress, RegOffset, RegisterValue) \
-	XIic_Out32((BaseAddress) + (RegOffset), (RegisterValue))
+static INLINE void XIic_WriteReg(UINTPTR BaseAddress, UINTPTR RegOffset, u32 RegisterValue)
+{
+	if (RegOffset == XIIC_CR_REG_OFFSET)
+	{
+		u8 gp = 0;
+		u32 IntrStatus = XIic_ReadReg((BaseAddress), XIIC_IISR_OFFSET) &
+				XIic_ReadReg((BaseAddress), XIIC_IIER_OFFSET);
+		u32 Status = XIic_ReadReg(BaseAddress, XIIC_SR_REG_OFFSET);
+
+		gp |= (IntrStatus & XIIC_INTR_ARB_LOST_MASK) 		? (1 << 0) : 0;
+		gp |= (IntrStatus & XIIC_INTR_TX_ERROR_MASK) 		? (1 << 1) : 0;
+		gp |= (IntrStatus & XIIC_INTR_TX_EMPTY_MASK)		? (1 << 2) : 0;
+		gp |= (IntrStatus & XIIC_INTR_RX_FULL_MASK)			? (1 << 3) : 0;
+		gp |= (IntrStatus & XIIC_INTR_BNB_MASK) 			? (1 << 4) : 0;
+		gp |= (Status & XIIC_SR_BUS_BUSY_MASK) 				? (1 << 5) : 0;
+		gp |= (RegisterValue & XIIC_CR_MSMS_MASK) 			? (1 << 6) : 0;
+		gp |= (RegisterValue & XIIC_CR_REPEATED_START_MASK) ? (1 << 7) : 0;
+		XIic_WriteReg(BaseAddress, XIIC_GPO_REG_OFFSET,
+				gp);
+	}
+
+	XIic_Out32((BaseAddress) + (RegOffset), (RegisterValue));
+}
 
 /******************************************************************************/
 /**
